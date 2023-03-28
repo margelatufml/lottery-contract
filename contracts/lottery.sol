@@ -140,7 +140,7 @@ contract lottery is VRFConsumerBaseV2, KeeperCompatibleInterface {
         emit WinnerPicked(recentWinner);
     }
 
-    function getEtraceFee() public view returns (uint256) {
+    function getEntranceFee() public view returns (uint256) {
         return i_entranceFee;
     }
 

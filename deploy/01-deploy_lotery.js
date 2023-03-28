@@ -8,16 +8,16 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
     const chainId = network.config.chainId
-    let vrfCoordinatorV2Address
+    let vrfCoordinatorV2Address, vrfCoordinatorV2Mock, subscribtionId
 
     if (developmentChains.includes(network.name)) {
-        const VRFCoordinatorV2Mock = await ethers.getContract("VRFCoordinatorV2Mock")
-        vrfCoordinatorV2Address = VRFCoordinatorV2Mock.address
-        const transactionResponse = await VRFCoordinatorV2Mock.createSubscription()
+        vrfCoordinatorV2Mock = await ethers.getContract("VRFCoordinatorV2Mock")
+        vrfCoordinatorV2Address = vrfCoordinatorV2Mock.address
+        const transactionResponse = await vrfCoordinatorV2Mock.createSubscription()
         const transactionReceipt = await transactionResponse.wait(1)
         subscribtionId = transactionReceipt.events[0].args.subId
         //Fund the subscribtion
-        await VRFCoordinatorV2Mock.fundSubscription(subscribtionId, VRF_SUB_MOUNT)
+        await vrfCoordinatorV2Mock.fundSubscription(subscribtionId, VRF_SUB_MOUNT)
     } else {
         vrfCoordinatorV2Address = networkConfig[chainId]["vrfCoordinatorV2"]
         subscribtionId = networkConfig[chainId]["subscriptionId"]
@@ -40,6 +40,10 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         log: true,
         waitConfirmations: network.config.blockConfirmations || 1,
     })
+    if (developmentChains.includes(network.name)) {
+        const vrfCoordinatorV2Mock = await ethers.getContract("VRFCoordinatorV2Mock")
+        await vrfCoordinatorV2Mock.addConsumer(subscribtionId, lottery.address)
+    }
     if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
         log("Verifying....")
         await verify(lottery.address, arguments)
@@ -47,4 +51,4 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
 
     log("_______________________")
 }
-module.exports.tag = ["all", "lottery"]
+module.exports.tags = ["all", "lottery"]
