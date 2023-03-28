@@ -17,7 +17,7 @@ developmentChains.includes(network.name)
               it("works with live Chainlink Keepers and Chainlink VRF, we get a random winner", async function () {
                   // enter the lottery
                   console.log("Setting up test...")
-                  const startingTimeStamp = await lottery.getLastTimeStamp()
+                  const startingTimeStamp = await lottery.getLatestTimeStamp()
                   const accounts = await ethers.getSigners()
 
                   console.log("Setting up Listener...")
